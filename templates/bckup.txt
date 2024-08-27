@@ -1,0 +1,114 @@
+#import os
+#os.environ['KAGGLE_USERNAME'] = 'your_username'
+#os.environ['KAGGLE_KEY'] = 'your_api_key'
+
+#import os
+from flask import Flask, request, render_template
+#from kaggle.api.kaggle_api_extended import KaggleApi
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+
+app = Flask(__name__)
+
+#api = KaggleApi()
+#api.authenticate()
+
+
+# Load the dataset from Kaggle
+#dataset_name = 'thilinashalom/bmi-30daysmeal-plan-model'
+#try:
+#    api.dataset_download_files(dataset_name, path='.', unzip=True)
+#except Exception as e:
+#    print(f"Error downloading dataset: {e}")
+
+# Load the dataset files
+#bmi_file = 'bmi-30daysmeal-plan-model/input/age-weight-height-bmi-analysis/bmi.csv'
+#meals_file = 'bmi-30daysmeal-plan-model/input/meal-plan-search/mealplans.csv'
+#nutrition_file = 'bmi-30daysmeal-plan-model/input/nutritional-values-for-common-foods-and-products/nutrition.csv'
+
+#if os.path.exists(bmi_file) and os.path.exists(meals_file) and os.path.exists(nutrition_file):
+#    bmi_df = pd.read_csv(bmi_file)
+#    meals_df = pd.read_csv(meals_file)
+#    nutrition_df = pd.read_csv(nutrition_file)
+#else:
+#    print("Dataset files not found")
+#   exit(1)
+
+# Load the datasets
+bmi_df = pd.read_csv('csv/bmi.csv')
+meals_df = pd.read_csv('csv/mealplans.csv')
+nutrition_df = pd.read_csv('csv/nutrition.csv')
+
+# Clean and preprocess the BMI data
+bmi_df.dropna(inplace=True)
+bmi_df['Bmi'] = bmi_df['Weight'] / (bmi_df['Height'] ** 2)
+bmi_df['BmiClass'] = pd.cut(bmi_df['Bmi'], bins=[0, 18.5, 24.9, 29.9, 34.9, 39.9, np.inf],
+                            labels=['Underweight', 'Normal weight', 'Overweight', 'Obese Class 1', 'Obese Class 2', 'Obese Class 3'])
+
+# Normalize the nutritional data
+def extract_numeric(value):
+    if pd.isna(value):
+        return np.nan
+    if isinstance(value, (int, float)):
+        return value
+    return float(''.join(filter(str.isdigit, str(value))))
+
+columns_to_normalize = ['calories', 'total_fat', 'cholesterol', 'sodium', 'fiber', 'protein']
+
+for col in columns_to_normalize:
+    if col not in nutrition_df.columns:
+        print(f"Column {col} not found in the dataset")
+    else:
+        nutrition_df[col] = nutrition_df[col].apply(extract_numeric)
+        nutrition_df[col] = pd.to_numeric(nutrition_df[col], errors='coerce')
+
+# Remove rows with NaN values after preprocessing
+nutrition_df.dropna(subset=columns_to_normalize, inplace=True)
+
+scaler = StandardScaler()
+nutrition_normalized = scaler.fit_transform(nutrition_df[columns_to_normalize])
+nutrition_normalized_df = pd.DataFrame(nutrition_normalized, columns=columns_to_normalize)
+
+# Perform clustering on the nutrition data
+kmeans = KMeans(n_clusters=5, random_state=42)
+nutrition_df['cluster'] = kmeans.fit_predict(nutrition_normalized_df)
+
+# Generate meal plan based on BMI
+def generate_meal_plan(bmi_class, num_days):
+    if bmi_class == 'Underweight':
+        cluster = 0
+    elif bmi_class == 'Normal weight':
+        cluster = 1
+    elif bmi_class == 'Overweight':
+        cluster = 2
+    elif bmi_class == 'Obese Class 1':
+        cluster = 3
+    else:
+        cluster = 4
+    meal_plan = nutrition_df[nutrition_df['cluster'] == cluster].sample(num_days)
+    return meal_plan[['name', 'calories', 'total_fat', 'protein', 'sodium', 'fiber']]
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        weight = float(request.form['weight'])
+        height = float(request.form['height'])
+        bmi = weight / (height ** 2)
+        if bmi < 18.5:
+            bmi_class = 'Underweight'
+        elif bmi < 24.9:
+            bmi_class = 'Normal weight'
+        elif bmi < 29.9:
+            bmi_class = 'Overweight'
+        elif bmi < 34.9:
+            bmi_class = 'Obese Class 1'
+        else:
+            bmi_class = 'Obese Class 2'
+        meal_plan = generate_meal_plan(bmi_class, 30)
+        return render_template('meal_plan.html', meal_plan=meal_plan.to_html())
+    return render_template('index.html')
+
+if __name__ == '__main__':
+    app.run(debug=True)

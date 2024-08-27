@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Meal Plan</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Meal Plans For 30 Days</h1>
+    <p>Your BMI is: {{ bmi }}</p>
+    <p>Your BMI class is: {{ bmi_class }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>Name</th>
+          <th>Calories</th>
+          <th>Total Fat</th>
+          <th>Protein</th>
+          <th>Sodium</th>
+          <th>Fiber</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for index, row in meal_plan.iterrows() %}
+        <tr>
+            <td>{{ row['Day'] }}</td>
+            <td>{{ row['name'] }}</td>
+            <td>{{ row['calories'] }}</td>
+            <td>{{ row['total_fat'] }}</td>
+            <td>{{ row['protein'] }}</td>
+            <td>{{ row['sodium'] }}</td>
+            <td>{{ row['fiber'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>  
+  </body>
+</html>
