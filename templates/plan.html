@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Plan</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Your 30-Day Plan</h1>
+    <h2>Workout Plan</h2>
+    <table>
+        <tr>
+            <th>Day</th>
+            <th>Workout</th>
+        </tr>
+        {% for day, workout in workout_plan.items() %}
+        <tr>
+            <td>{{ day }}</td>
+            <td>{{ workout }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <h2>Meal Plan</h2>
+    <table>
+        <tr>
+            <th>Day</th>
+            <th>Breakfast</th>
+            <th>Lunch</th>
+            <th>Dinner</th>
+        </tr>
+        {% for day, meals in meal_plan.items() %}
+        <tr>
+            <td>{{ day }}</td>
+            <td>{{ meals.breakfast }}</td>
+            <td>{{ meals.lunch }}</td>
+            <td>{{ meals.dinner }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
