@@ -5,7 +5,7 @@ This project is designed to develop an AI model that analyzes BMI data and provi
 ## Project Structure
 
 ```
-ai-model-project
+BMIMODEL
 ├── data
 │   ├── bmi.csv
 │   ├── mealplans.csv
