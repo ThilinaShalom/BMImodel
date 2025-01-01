@@ -1,6 +1,6 @@
-# AI Model Project
+# BMIMODEL
 
-This project is designed to develop an AI model that analyzes BMI data and provides meal plans based on nutritional information. The application is built using Flask and utilizes machine learning techniques for clustering.
+This project uses an AI model to generate personalized 30-day workout and meal plans based on user input. The AI model is trained using KMeans clustering on nutritional data.
 
 ## Project Structure
 
