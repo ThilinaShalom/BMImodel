@@ -2,7 +2,6 @@ from flask import Flask, request, render_template
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans
 from preprocess import extract_numeric
 import joblib
 
@@ -28,7 +27,6 @@ for col in columns_to_normalize:
     else:
         nutrition_df[col] = nutrition_df[col].apply(extract_numeric)
 
-# Normalize the data using StandardScaler
 scaler = StandardScaler()
 nutrition_df[columns_to_normalize] = scaler.fit_transform(nutrition_df[columns_to_normalize])
 
